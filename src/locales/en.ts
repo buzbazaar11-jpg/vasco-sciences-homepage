@@ -13,7 +13,7 @@ export const en = {
     quality: "Quality",
     facility: "Facility",
     research: "Research & Insights",
-    blog: "Blog",
+git     blog: "Blog",
     resources: "Resources",
     contact: "Contact",
     faq: "FAQ",
