@@ -13,7 +13,6 @@ export const en = {
     quality: "Quality",
     facility: "Facility",
     research: "Research & Insights",
-    blog: "Blog",
     resources: "Resources",
     contact: "Contact",
     faq: "FAQ",
@@ -966,8 +965,21 @@ export const en = {
     back: "Back to Science & Insights",
     related: "Related reading",
     sectionsTitle: "In this article",
-    sections: [],
-    note: "Scientific article published by Vesco Science. References are provided inline. Product-specific and batch-specific data are issued with formal documentation and are not published on this page.",
+    sections: [
+      {
+        title: "Context",
+        body: "This topic sits at the point where laboratory science meets manufacturing reality. The scientific principle is usually well documented; the harder question is how that principle survives scale-up, packaging and international distribution without changing the behaviour of the finished product.",
+      },
+      {
+        title: "What it means in practice",
+        body: "For a B2B partner, the practical consequence is specification. Every decision described here eventually appears as a parameter on a technical data sheet or a control point in a batch record — which is where a development conversation should start rather than end.",
+      },
+      {
+        title: "How Vesco Science approaches it",
+        body: "We treat this as a development question rather than a marketing one: define the target profile, select the platform and process that can meet it, and confirm the outcome through analytical work before a commercial batch is planned.",
+      },
+    ],
+    note: "Editorial article prepared for this preview. Product-specific and batch-specific data are issued with formal documentation and are not published on this page.",
     cta: "Discuss this topic with our team",
   },
 } as const;
