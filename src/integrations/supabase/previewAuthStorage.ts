@@ -3,11 +3,7 @@
 // On a Lovable preview surface, broker the auth session to the editor over
 // postMessage so the project's preview surfaces share one login; else localStorage.
 export function brokeredPreviewStorage() {
-  // Guard BOTH window AND location — on the server (Vercel/Nitro SSR) neither
-  // exists. Accessing location without this guard throws a ReferenceError that
-  // crashes the entire server-rendered page.
-  if (typeof window === 'undefined' || typeof location === 'undefined') return undefined;
-
+  if (typeof window === 'undefined') return undefined;
   const host = location.hostname;
   const PREVIEW_ZONES = ['lovableproject.com', 'lovableproject-dev.com', 'lovable.app', 'gpt-eng.com', 'gptengineer.run'];
   const onPreviewZone = PREVIEW_ZONES.some((z) => host === z || host.endsWith('.' + z));
