@@ -161,7 +161,7 @@ function AdminProductsPage() {
           });
 
           // Fallback to first product if no match
-          if (!bestSlug && products.length > 0) {
+          if (!bestSlug && products[0]) {
             bestSlug = products[0].slug;
           }
 

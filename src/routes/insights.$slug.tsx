@@ -25,7 +25,7 @@ export const Route = createFileRoute("/insights/$slug")({
             excerpt: data.excerpt || "",
             hero_image: data.hero_image || "",
             sections: Array.isArray(data.sections)
-              ? (data.sections as { heading?: string; body: string }[])
+              ? (data.sections as { heading?: string; body: string; image?: string }[])
               : [],
             references: Array.isArray(data.references_list)
               ? (data.references_list as { phrase?: string; url?: string }[]).map((r) => ({
