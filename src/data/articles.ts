@@ -6,6 +6,7 @@ export type Reference = { phrase: string; url: string };
 export type ArticleSection = {
   heading?: string;
   body: string;
+  image?: string;
 };
 
 export type Article = {
@@ -13,6 +14,7 @@ export type Article = {
   category: string;
   title: string;
   excerpt: string;
+  hero_image?: string;
   sections: ArticleSection[];
   references?: Reference[];
 };

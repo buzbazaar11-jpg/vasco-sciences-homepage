@@ -202,6 +202,7 @@ function AdminProductsPage() {
 
     for (let i = 0; i < zipMatches.length; i++) {
       const match = zipMatches[i];
+      if (!match) continue;
       setBatchProgress({ current: i + 1, total: zipMatches.length });
 
       try {
