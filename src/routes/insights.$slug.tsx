@@ -24,8 +24,15 @@ export const Route = createFileRoute("/insights/$slug")({
             title: data.title,
             excerpt: data.excerpt || "",
             hero_image: data.hero_image || "",
-            sections: Array.isArray(data.sections) ? data.sections : [],
-            references: Array.isArray(data.references_list) ? data.references_list : [],
+            sections: Array.isArray(data.sections)
+              ? (data.sections as { heading?: string; body: string }[])
+              : [],
+            references: Array.isArray(data.references_list)
+              ? (data.references_list as { phrase?: string; url?: string }[]).map((r) => ({
+                  phrase: String(r?.phrase ?? ""),
+                  url: String(r?.url ?? ""),
+                }))
+              : [],
           },
         };
       }
