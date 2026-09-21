@@ -161,7 +161,7 @@ function AdminProductsPage() {
           });
 
           // Fallback to first product if no match
-          if (!bestSlug && products.length > 0) {
+          if (!bestSlug && products[0]) {
             bestSlug = products[0].slug;
           }
 
@@ -202,6 +202,7 @@ function AdminProductsPage() {
 
     for (let i = 0; i < zipMatches.length; i++) {
       const match = zipMatches[i];
+      if (!match) continue;
       setBatchProgress({ current: i + 1, total: zipMatches.length });
 
       try {

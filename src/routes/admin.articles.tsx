@@ -246,7 +246,10 @@ function AdminArticlesPage() {
   const updateSection = (index: number, key: string, val: string) => {
     setFormData((prev) => {
       const updated = [...prev.sections];
-      updated[index] = { ...updated[index], [key]: val };
+      const existing = updated[index];
+      if (existing) {
+        updated[index] = { ...existing, [key]: val };
+      }
       return { ...prev, sections: updated };
     });
   };
