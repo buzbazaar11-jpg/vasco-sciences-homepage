@@ -128,6 +128,96 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          id: string
+          slug: string
+          category: string
+          group_name: string
+          label: string
+          name: string
+          detail: string
+          specs: Json
+          image_url: string
+          sort_order: number
+          published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          category: string
+          group_name?: string
+          label?: string
+          name: string
+          detail?: string
+          specs?: Json
+          image_url?: string
+          sort_order?: number
+          published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          category?: string
+          group_name?: string
+          label?: string
+          name?: string
+          detail?: string
+          specs?: Json
+          image_url?: string
+          sort_order?: number
+          published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      articles: {
+        Row: {
+          id: string
+          slug: string
+          category: string
+          title: string
+          excerpt: string
+          hero_image: string
+          sections: Json
+          references_list: Json
+          published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          category: string
+          title: string
+          excerpt?: string
+          hero_image?: string
+          sections?: Json
+          references_list?: Json
+          published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          category?: string
+          title?: string
+          excerpt?: string
+          hero_image?: string
+          sections?: Json
+          references_list?: Json
+          published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

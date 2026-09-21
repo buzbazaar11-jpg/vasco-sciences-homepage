@@ -26,13 +26,16 @@ import { Route as AboutMissionRouteImport } from './routes/about.mission'
 import { Route as AboutNetworkRouteImport } from './routes/about.network'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAiAssistantRouteImport } from './routes/admin.ai-assistant'
+import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AdminMediaRouteImport } from './routes/admin.media'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminResourcesRouteImport } from './routes/admin.resources'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSiteEditorRouteImport } from './routes/admin.site-editor'
 import { Route as InsightsSlugRouteImport } from './routes/insights.$slug'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as ProductsCategoryRouteImport } from './routes/products.$category'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as TechnologyIndexRouteImport } from './routes/technology.index'
 import { Route as TechnologySlugRouteImport } from './routes/technology.$slug'
@@ -124,9 +127,19 @@ const AdminAiAssistantRoute = AdminAiAssistantRouteImport.update({
   path: '/ai-assistant',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminArticlesRoute = AdminArticlesRouteImport.update({
+  id: '/articles',
+  path: '/articles',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminResourcesRoute = AdminResourcesRouteImport.update({
@@ -157,6 +170,11 @@ const PSlugRoute = PSlugRouteImport.update({
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsCategoryRoute = ProductsCategoryRouteImport.update({
+  id: '/products/$category',
+  path: '/products/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsSlugRoute = ProductsSlugRouteImport.update({
@@ -202,12 +220,15 @@ export interface FileRoutesByFullPath {
   '/about/mission': typeof AboutMissionRoute
   '/about/network': typeof AboutNetworkRoute
   '/admin/ai-assistant': typeof AdminAiAssistantRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/resources': typeof AdminResourcesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/site-editor': typeof AdminSiteEditorRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/products/$category': typeof ProductsCategoryRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/technology/$slug': typeof TechnologySlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -232,12 +253,15 @@ export interface FileRoutesByTo {
   '/about/mission': typeof AboutMissionRoute
   '/about/network': typeof AboutNetworkRoute
   '/admin/ai-assistant': typeof AdminAiAssistantRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/resources': typeof AdminResourcesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/site-editor': typeof AdminSiteEditorRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/products/$category': typeof ProductsCategoryRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/technology/$slug': typeof TechnologySlugRoute
   '/admin': typeof AdminIndexRoute
@@ -264,12 +288,15 @@ export interface FileRoutesById {
   '/about/mission': typeof AboutMissionRoute
   '/about/network': typeof AboutNetworkRoute
   '/admin/ai-assistant': typeof AdminAiAssistantRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/resources': typeof AdminResourcesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/site-editor': typeof AdminSiteEditorRoute
   '/insights/$slug': typeof InsightsSlugRoute
   '/p/$slug': typeof PSlugRoute
+  '/products/$category': typeof ProductsCategoryRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/technology/$slug': typeof TechnologySlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -297,12 +324,15 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/about/network'
     | '/admin/ai-assistant'
+    | '/admin/articles'
     | '/admin/media'
+    | '/admin/products'
     | '/admin/resources'
     | '/admin/settings'
     | '/admin/site-editor'
     | '/insights/$slug'
     | '/p/$slug'
+    | '/products/$category'
     | '/products/$slug'
     | '/technology/$slug'
     | '/admin/'
@@ -327,12 +357,15 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/about/network'
     | '/admin/ai-assistant'
+    | '/admin/articles'
     | '/admin/media'
+    | '/admin/products'
     | '/admin/resources'
     | '/admin/settings'
     | '/admin/site-editor'
     | '/insights/$slug'
     | '/p/$slug'
+    | '/products/$category'
     | '/products/$slug'
     | '/technology/$slug'
     | '/admin'
@@ -358,12 +391,15 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/about/network'
     | '/admin/ai-assistant'
+    | '/admin/articles'
     | '/admin/media'
+    | '/admin/products'
     | '/admin/resources'
     | '/admin/settings'
     | '/admin/site-editor'
     | '/insights/$slug'
     | '/p/$slug'
+    | '/products/$category'
     | '/products/$slug'
     | '/technology/$slug'
     | '/admin/'
@@ -388,6 +424,7 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PSlugRoute: typeof PSlugRoute
+  ProductsCategoryRoute: typeof ProductsCategoryRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   TechnologySlugRoute: typeof TechnologySlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -515,11 +552,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAiAssistantRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/articles': {
+      id: '/admin/articles'
+      path: '/articles'
+      fullPath: '/admin/articles'
+      preLoaderRoute: typeof AdminArticlesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
       fullPath: '/admin/media'
       preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/resources': {
@@ -562,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products/'
       preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/$category': {
+      id: '/products/$category'
+      path: '/products/$category'
+      fullPath: '/products/$category'
+      preLoaderRoute: typeof ProductsCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/$slug': {
@@ -616,7 +674,9 @@ const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
 
 interface AdminRouteChildren {
   AdminAiAssistantRoute: typeof AdminAiAssistantRoute
+  AdminArticlesRoute: typeof AdminArticlesRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminProductsRoute: typeof AdminProductsRoute
   AdminResourcesRoute: typeof AdminResourcesRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSiteEditorRoute: typeof AdminSiteEditorRoute
@@ -627,7 +687,9 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAiAssistantRoute: AdminAiAssistantRoute,
+  AdminArticlesRoute: AdminArticlesRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminProductsRoute: AdminProductsRoute,
   AdminResourcesRoute: AdminResourcesRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSiteEditorRoute: AdminSiteEditorRoute,
@@ -665,6 +727,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PSlugRoute: PSlugRoute,
+  ProductsCategoryRoute: ProductsCategoryRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   TechnologySlugRoute: TechnologySlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,

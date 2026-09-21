@@ -145,13 +145,10 @@ export function Header() {
     {
       to: "/products",
       key: "nav.products",
-      children: productCats.flatMap((cat) =>
-        cat.items.map((i) => ({
-          to: `/products/${i.slug}`,
-          label: i.name,
-          desc: cat.title,
-        })),
-      ),
+      children: productCats.map((cat) => ({
+        to: `/products/${cat.key}`,
+        label: cat.title,
+      })),
     },
     {
       to: "/oem",

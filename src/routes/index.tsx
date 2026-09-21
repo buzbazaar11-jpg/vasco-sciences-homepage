@@ -645,7 +645,7 @@ function Home() {
       </Section>
 
       {/* ================================================================
-          PRODUCTS — existing section, preserved
+          PRODUCTS — parent category cards only
           ================================================================ */}
       <Section tone="white">
         <Reveal>
@@ -655,27 +655,44 @@ function Home() {
             intro={t("products.intro")}
           />
         </Reveal>
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {productCats.map((cat, i) => (
-            <Reveal key={cat.key} delay={i * 80}>
-              <div className="card-flat h-full p-7">
-                <h3 className="text-[1.05rem] font-semibold text-navy">{cat.title}</h3>
-                <ul className="mt-5 space-y-2.5">
-                  {cat.items.map((item) => (
-                    <li key={item.slug}>
-                      <Link
-                        to="/products/$slug"
-                        params={{ slug: item.slug }}
-                        className="text-[0.9rem] text-muted-foreground transition-colors hover:text-science"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          ))}
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          {productCats.map((cat, i) => {
+            const descriptions: Record<string, string> = {
+              exosome:
+                "Lyophilized hUC-MSC exosomes, scalp & vital diluents, and branded exosome kits for regenerative applications.",
+              "dermal-fillers":
+                "Small and large-molecular HA fillers, Hyalique-X and Luminelle™ branded formats for aesthetic use.",
+              "peptide-bio-remodeling":
+                "Blue copper peptide platforms and BlueVive / CuveraX™ collaboration products for bio-remodeling.",
+              "botulinum-toxin":
+                "Botulinum toxin 50 U – 500 U plus Botivex and Toxexa branded collaboration formats.",
+              "pdrn-pn":
+                "PDRN and PN solutions including Nucelvia, POLYNEXA and DNAVIA™ branded regenerative injectables.",
+            };
+            return (
+              <Reveal key={cat.key} delay={i * 80}>
+                <Link
+                  to="/products/$category"
+                  params={{ category: cat.key }}
+                  className="card-flat group flex h-full flex-col p-7 transition-shadow hover:shadow-md"
+                >
+                  <span className="font-display text-[0.7rem] font-bold tracking-[0.18em] text-teal">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-4 text-[1.05rem] font-semibold text-navy transition-colors group-hover:text-science">
+                    {cat.title}
+                  </h3>
+                  <p className="mt-3 flex-1 text-[0.84rem] leading-relaxed text-muted-foreground">
+                    {descriptions[cat.key] ?? ""}
+                  </p>
+                  <div className="mt-5 flex items-center gap-2 text-[0.75rem] font-semibold tracking-[0.1em] uppercase text-teal">
+                    View Products
+                    <span className="h-px w-5 bg-teal transition-all duration-300 group-hover:w-8" />
+                  </div>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
         <Reveal delay={120}>
           <div className="mt-12">

@@ -1,14 +1,41 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { PageHero, Section, Reveal, TealButton } from "@/components/site/primitives";
 import { CTABand } from "@/components/site/CTABand";
 import { useI18n } from "@/lib/i18n";
 import { ARTICLES, getArticle } from "@/data/articles";
 
+import { supabase } from "@/integrations/supabase/client";
+
 export const Route = createFileRoute("/insights/$slug")({
-  loader: ({ params }) => {
-    const article = getArticle(params.slug);
-    if (!article) throw notFound();
-    return { article };
+  loader: async ({ params }) => {
+    try {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("*")
+        .eq("slug", params.slug)
+        .maybeSingle();
+
+      if (!error && data) {
+        return {
+          article: {
+            slug: data.slug,
+            category: data.category,
+            title: data.title,
+            excerpt: data.excerpt || "",
+            hero_image: data.hero_image || "",
+            sections: Array.isArray(data.sections) ? data.sections : [],
+            references: Array.isArray(data.references_list) ? data.references_list : [],
+          },
+        };
+      }
+    } catch (e) {
+      console.error("Supabase article loader error fallback to static:", e);
+    }
+
+    const staticArticle = getArticle(params.slug);
+    if (!staticArticle) throw notFound();
+    return { article: staticArticle };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -56,10 +83,40 @@ function Page() {
   const { article } = Route.useLoaderData();
   const { t } = useI18n();
 
-  // Related articles — same category, excluding current
-  const related = ARTICLES.filter(
-    (a) => a.category === article.category && a.slug !== article.slug,
-  ).slice(0, 4);
+  const [dbRelated, setDbRelated] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadRelated() {
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("slug, title, excerpt, category")
+          .eq("published", true)
+          .eq("category", article.category)
+          .neq("slug", article.slug)
+          .limit(4);
+
+        if (!error && data && data.length > 0) {
+          setDbRelated(data);
+        } else {
+          setDbRelated(
+            ARTICLES.filter(
+              (a) => a.category === article.category && a.slug !== article.slug
+            ).slice(0, 4)
+          );
+        }
+      } catch (err) {
+        setDbRelated(
+          ARTICLES.filter(
+            (a) => a.category === article.category && a.slug !== article.slug
+          ).slice(0, 4)
+        );
+      }
+    }
+    loadRelated();
+  }, [article.slug, article.category]);
+
+  const related = dbRelated;
 
   return (
     <>
@@ -82,16 +139,41 @@ function Page() {
               ← {t("article.back")}
             </Link>
 
-            {/* Article sections from articles.ts — exact Google Docs content */}
+            {/* Top Hero Header Image (if set from Admin or DB) */}
+            {article.hero_image && (
+              <Reveal>
+                <div className="mt-6 aspect-[16/9] w-full overflow-hidden border border-hairline rounded-sm bg-navy/5">
+                  <img
+                    src={article.hero_image}
+                    alt={article.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </Reveal>
+            )}
+
+            {/* Article sections from DB */}
             <div className="mt-10 grid gap-10">
               {article.sections.map((s, i) => (
                 <Reveal key={i} delay={i * 40}>
-                  <section>
+                  <section className="space-y-4">
                     {s.heading && (
                       <h2 className="text-[1.35rem] leading-snug font-semibold text-navy mb-4">
                         {s.heading}
                       </h2>
                     )}
+
+                    {/* Mid-Section Image (if set from Admin PC upload or DB) */}
+                    {s.image && (
+                      <div className="my-6 aspect-[16/9] w-full overflow-hidden border border-hairline rounded-sm bg-navy/5">
+                        <img
+                          src={s.image}
+                          alt={s.heading || `Section ${i + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
+
                     {/* Render body — handle newline-separated paragraphs */}
                     {s.body.split("\n\n").map((para, pi) => {
                       // Bullet list paragraphs start with "• "

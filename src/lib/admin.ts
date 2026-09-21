@@ -144,6 +144,42 @@ export async function uploadSiteFile(file: File, folder = "uploads") {
 }
 
 /**
+ * Upload an image from user's PC directly to Supabase Storage bucket.
+ * Returns public image URL or DataURL fallback for instant visibility.
+ */
+export async function uploadAdminImage(file: File, folder = "uploads"): Promise<string> {
+  try {
+    const safeName = `${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
+    const path = folder ? `${folder}/${safeName}` : safeName;
+
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, {
+      cacheControl: "31536000",
+      upsert: true,
+    });
+
+    if (!error) {
+      const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+      if (data?.publicUrl) {
+        return data.publicUrl;
+      }
+    } else {
+      console.warn("Supabase storage upload error:", error.message);
+    }
+  } catch (err) {
+    console.warn("Storage upload exception:", err);
+  }
+
+  // Fallback to DataURL so local PC images work immediately even offline
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Get a permanent public URL for a file already in the images bucket.
  */
 export function getPublicUrl(path: string): string {

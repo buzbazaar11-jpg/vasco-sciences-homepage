@@ -19,7 +19,16 @@ export const Route = createFileRoute("/admin")({
 });
 
 type NavItem = {
-  to: "/admin" | "/admin/pages" | "/admin/settings" | "/admin/resources" | "/admin/media" | "/admin/site-editor" | "/admin/ai-assistant";
+  to:
+    | "/admin"
+    | "/admin/products"
+    | "/admin/articles"
+    | "/admin/site-editor"
+    | "/admin/pages"
+    | "/admin/media"
+    | "/admin/resources"
+    | "/admin/settings"
+    | "/admin/ai-assistant";
   label: string;
   icon: string;
   exact?: boolean;
@@ -30,6 +39,8 @@ const NAV: NavItem[] = [
   // Overview
   { to: "/admin",             label: "Dashboard",        icon: "⊞", exact: true, group: "Overview" },
   // Content
+  { to: "/admin/products",    label: "Products (79)",    icon: "🧪", group: "Content" },
+  { to: "/admin/articles",    label: "Articles & Blogs",  icon: "📰", group: "Content" },
   { to: "/admin/site-editor", label: "Page Editor",       icon: "✏️", group: "Content" },
   { to: "/admin/pages",       label: "Visual Builder",    icon: "🏗", group: "Content" },
   { to: "/admin/media",       label: "Media Manager",     icon: "🖼", group: "Content" },
