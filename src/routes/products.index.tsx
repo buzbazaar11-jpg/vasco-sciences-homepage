@@ -177,11 +177,22 @@ function Page() {
                     <h3 className="mt-3 text-[1.15rem] font-semibold text-navy transition-colors group-hover:text-science">
                       {cat.title}
                     </h3>
+
+                    {/* Part A & Part B Badges */}
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      <span className="rounded bg-teal/10 px-2 py-0.5 text-[0.62rem] font-semibold text-teal uppercase tracking-wider">
+                        Part A: Platforms
+                      </span>
+                      <span className="rounded bg-science/10 px-2 py-0.5 text-[0.62rem] font-semibold text-science uppercase tracking-wider">
+                        Part B: Collaborations
+                      </span>
+                    </div>
+
                     <p className="mt-3 flex-1 text-[0.85rem] leading-relaxed text-muted-foreground">
                       {cat.description}
                     </p>
                     <div className="mt-5 flex items-center gap-2 text-[0.75rem] font-semibold tracking-[0.1em] uppercase text-teal">
-                      Explore Category
+                      Explore Category & Formats
                       <span className="h-px w-5 bg-teal transition-all duration-300 group-hover:w-8" />
                     </div>
                   </div>
