@@ -572,6 +572,18 @@ function AdminProductsPage() {
           </button>
 
           <button
+            onClick={() => {
+              setDriveMsg(null);
+              setIsDriveModalOpen(true);
+            }}
+            className="rounded-sm border border-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-navy hover:bg-navy/5 flex items-center gap-1.5 shadow-sm"
+          >
+            <span>☁️</span> Import from Google Drive
+          </button>
+
+
+
+          <button
             onClick={handleOpenAddModal}
             className="rounded-sm bg-teal px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#05231f] transition-opacity hover:opacity-90"
           >
