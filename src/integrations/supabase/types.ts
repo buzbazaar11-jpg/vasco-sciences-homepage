@@ -14,225 +14,16 @@ export type Database = {
   }
   public: {
     Tables: {
-      pages: {
-        Row: {
-          blocks: Json
-          created_at: string
-          description_en: string
-          description_ko: string
-          id: string
-          published: boolean
-          slug: string
-          title_en: string
-          title_ko: string
-          updated_at: string
-        }
-        Insert: {
-          blocks?: Json
-          created_at?: string
-          description_en?: string
-          description_ko?: string
-          id?: string
-          published?: boolean
-          slug: string
-          title_en?: string
-          title_ko?: string
-          updated_at?: string
-        }
-        Update: {
-          blocks?: Json
-          created_at?: string
-          description_en?: string
-          description_ko?: string
-          id?: string
-          published?: boolean
-          slug?: string
-          title_en?: string
-          title_ko?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      resources: {
-        Row: {
-          category: string
-          created_at: string
-          file_path: string
-          file_url: string
-          id: string
-          restricted: boolean
-          sort_order: number
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          file_path?: string
-          file_url?: string
-          id?: string
-          restricted?: boolean
-          sort_order?: number
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          file_path?: string
-          file_url?: string
-          id?: string
-          restricted?: boolean
-          sort_order?: number
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      site_settings: {
-        Row: {
-          key: string
-          updated_at: string
-          value: Json
-        }
-        Insert: {
-          key: string
-          updated_at?: string
-          value?: Json
-        }
-        Update: {
-          key?: string
-          updated_at?: string
-          value?: Json
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      products: {
-        Row: {
-          id: string
-          slug: string
-          category: string
-          group_name: string
-          label: string
-          name: string
-          detail: string
-          specs: Json
-          image_url: string
-          sort_order: number
-          published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          slug: string
-          category: string
-          group_name?: string
-          label?: string
-          name: string
-          detail?: string
-          specs?: Json
-          image_url?: string
-          sort_order?: number
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          slug?: string
-          category?: string
-          group_name?: string
-          label?: string
-          name?: string
-          detail?: string
-          specs?: Json
-          image_url?: string
-          sort_order?: number
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      articles: {
-        Row: {
-          id: string
-          slug: string
-          category: string
-          title: string
-          excerpt: string
-          hero_image: string
-          sections: Json
-          references_list: Json
-          published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          slug: string
-          category: string
-          title: string
-          excerpt?: string
-          hero_image?: string
-          sections?: Json
-          references_list?: Json
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          slug?: string
-          category?: string
-          title?: string
-          excerpt?: string
-          hero_image?: string
-          sections?: Json
-          references_list?: Json
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "editor"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -359,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "editor"],
-    },
+    Enums: {},
   },
 } as const
