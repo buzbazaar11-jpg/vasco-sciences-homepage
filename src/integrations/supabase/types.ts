@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      articles: {
+        Row: {
+          category: string
+          created_at: string
+          excerpt: string
+          hero_image: string
+          id: string
+          published: boolean
+          references_list: Json
+          sections: Json
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          excerpt?: string
+          hero_image?: string
+          id?: string
+          published?: boolean
+          references_list?: Json
+          sections?: Json
+          slug: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          excerpt?: string
+          hero_image?: string
+          id?: string
+          published?: boolean
+          references_list?: Json
+          sections?: Json
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           blocks: Json
@@ -49,6 +91,54 @@ export type Database = {
           slug?: string
           title_en?: string
           title_ko?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          detail: string
+          group_name: string
+          id: string
+          image_url: string
+          label: string
+          name: string
+          published: boolean
+          slug: string
+          sort_order: number
+          specs: Json
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          detail?: string
+          group_name?: string
+          id?: string
+          image_url?: string
+          label?: string
+          name?: string
+          published?: boolean
+          slug: string
+          sort_order?: number
+          specs?: Json
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          detail?: string
+          group_name?: string
+          id?: string
+          image_url?: string
+          label?: string
+          name?: string
+          published?: boolean
+          slug?: string
+          sort_order?: number
+          specs?: Json
           updated_at?: string
         }
         Relationships: []
@@ -128,108 +218,12 @@ export type Database = {
         }
         Relationships: []
       }
-      products: {
-        Row: {
-          id: string
-          slug: string
-          category: string
-          group_name: string
-          label: string
-          name: string
-          detail: string
-          specs: Json
-          image_url: string
-          sort_order: number
-          published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          slug: string
-          category: string
-          group_name?: string
-          label?: string
-          name: string
-          detail?: string
-          specs?: Json
-          image_url?: string
-          sort_order?: number
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          slug?: string
-          category?: string
-          group_name?: string
-          label?: string
-          name?: string
-          detail?: string
-          specs?: Json
-          image_url?: string
-          sort_order?: number
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      articles: {
-        Row: {
-          id: string
-          slug: string
-          category: string
-          title: string
-          excerpt: string
-          hero_image: string
-          sections: Json
-          references_list: Json
-          published: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          slug: string
-          category: string
-          title: string
-          excerpt?: string
-          hero_image?: string
-          sections?: Json
-          references_list?: Json
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          slug?: string
-          category?: string
-          title?: string
-          excerpt?: string
-          hero_image?: string
-          sections?: Json
-          references_list?: Json
-          published?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "editor"

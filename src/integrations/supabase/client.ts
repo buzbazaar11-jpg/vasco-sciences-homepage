@@ -3,8 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-const IS_SERVER = typeof window === 'undefined';
-
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
@@ -29,30 +27,21 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
-function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement).
-  // Fall back to process.env for SSR (server-side rendering on Vercel/Nitro).
-  // import.meta.env is replaced at build time by Vite (client bundle).
-  // process.env is available at runtime on the Vercel/Nitro SSR server.
-  const SUPABASE_URL: string =
-    import.meta.env['VITE_SUPABASE_URL'] ||
-    (typeof process !== 'undefined' ? (process.env['VITE_SUPABASE_URL'] ?? process.env['SUPABASE_URL'] ?? '') : '') ||
-    '';
 
-  const SUPABASE_PUBLISHABLE_KEY: string =
-    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
-    (typeof process !== 'undefined' ? (process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ?? process.env['SUPABASE_PUBLISHABLE_KEY'] ?? '') : '') ||
-    '';
+function createSupabaseClient() {
+  // Use import.meta.env for client-side (Vite build-time replacement)
+  // Fall back to process.env for SSR (server-side rendering)
+  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    console.warn(
-      '[Supabase] VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is not set. ' +
-      'The site will render without database features. ' +
-      'Add these variables in Vercel → Settings → Environment Variables.',
-    );
-    // Return a no-op placeholder so the app never crashes — all queries simply
-    // return empty data and the public pages render normally.
-    return createClient<Database>('https://placeholder.supabase.co', 'placeholder-anon-key');
+    const missing = [
+      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
+      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
+    ];
+    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    console.error(`[Supabase] ${message}`);
+    throw new Error(message);
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -60,11 +49,9 @@ function createSupabaseClient() {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
     },
     auth: {
-      // brokeredPreviewStorage uses window/localStorage — only safe in the browser.
-      // On the server (Vercel SSR) we pass undefined so Supabase skips auth storage.
-      storage: IS_SERVER ? undefined : brokeredPreviewStorage(),
-      persistSession: !IS_SERVER,
-      autoRefreshToken: !IS_SERVER,
+      storage: brokeredPreviewStorage(),
+      persistSession: true,
+      autoRefreshToken: true,
     },
   });
 }
@@ -79,3 +66,4 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>,
     return Reflect.get(_supabase, prop, receiver);
   },
 });
+
