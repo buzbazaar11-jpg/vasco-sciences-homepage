@@ -79,7 +79,41 @@ function calculateMatchScore(fileName: string, product: DbProduct): number {
   return Math.min(100, Math.round((matches / fileTokens.length) * 100));
 }
 
+/** Normalizes product/folder names so "exogenisis sclap 10 b" ≈ "Exogenesis Scalp 10B". */
+function normalizeName(raw: string): string[] {
+  return raw
+    .toLowerCase()
+    .replace(/\.[^/.]+$/, "")
+    .replace(/(\d+)\s*b\b/g, "$1b")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\bexogenisis\b/g, "exogenesis")
+    .replace(/\bsclap\b/g, "scalp")
+    .replace(/\bvive\b/g, "vive")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function nameMatchScore(folderName: string, product: DbProduct): number {
+  const tokens = normalizeName(folderName);
+  if (tokens.length === 0) return 0;
+  const target = normalizeName(`${product.name} ${product.group_name} ${product.label} ${product.slug}`);
+  const hit = tokens.filter((t) => target.includes(t)).length;
+  return Math.round((hit / tokens.length) * 100);
+}
+
+export type DriveMatchItem = {
+  folderName: string;
+  fileId: string;
+  fileName: string;
+  imageCount: number;
+  selectedSlug: string;
+  score: number;
+  status: "idle" | "working" | "done" | "error";
+};
+
 function AdminProductsPage() {
+
   const [products, setProducts] = useState<DbProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
