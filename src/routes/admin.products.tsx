@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ALL_PRODUCTS, ProductDetailItem } from "@/data/allProductsData";
 import { uploadAdminImage } from "@/lib/admin";
 import JSZip from "jszip";
+import {
+  listDriveProductImages,
+  fetchDriveImage,
+  type DriveFolderImage,
+} from "@/lib/driveImport.functions";
+
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProductsPage,
