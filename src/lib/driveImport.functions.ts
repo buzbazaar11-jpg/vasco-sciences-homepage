@@ -33,9 +33,23 @@ async function driveList(query: string): Promise<DriveFile[]> {
 
 function extractFolderId(input: string): string {
   const trimmed = input.trim();
-  const m = trimmed.match(/\/folders\/([a-zA-Z0-9_-]+)/) ?? trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  return m?.[1] ?? trimmed;
+  if (/docs\.google\.com\/(document|spreadsheets|presentation)\//.test(trimmed)) {
+    throw new Error(
+      "Yeh Google Docs/Sheets ka link hai. Please Google Drive folder ka link dein, jaise: https://drive.google.com/drive/folders/XXXXXXXX",
+    );
+  }
+  const m =
+    trimmed.match(/\/folders\/([a-zA-Z0-9_-]+)/) ??
+    trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/) ??
+    trimmed.match(/^([a-zA-Z0-9_-]{15,})$/);
+  if (!m?.[1]) {
+    throw new Error(
+      "Folder link samajh nahi aaya. Drive folder kholein aur address bar ka poora link paste karein (…/drive/folders/…).",
+    );
+  }
+  return m[1];
 }
+
 
 export type DriveFolderImage = {
   folderName: string;
