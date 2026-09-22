@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ALL_PRODUCTS, ProductDetailItem } from "@/data/allProductsData";
 import { uploadAdminImage } from "@/lib/admin";
 import JSZip from "jszip";
+import {
+  listDriveProductImages,
+  fetchDriveImage,
+  type DriveFolderImage,
+} from "@/lib/driveImport.functions";
+
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProductsPage,
@@ -73,7 +79,41 @@ function calculateMatchScore(fileName: string, product: DbProduct): number {
   return Math.min(100, Math.round((matches / fileTokens.length) * 100));
 }
 
+/** Normalizes product/folder names so "exogenisis sclap 10 b" ≈ "Exogenesis Scalp 10B". */
+function normalizeName(raw: string): string[] {
+  return raw
+    .toLowerCase()
+    .replace(/\.[^/.]+$/, "")
+    .replace(/(\d+)\s*b\b/g, "$1b")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\bexogenisis\b/g, "exogenesis")
+    .replace(/\bsclap\b/g, "scalp")
+    .replace(/\bvive\b/g, "vive")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function nameMatchScore(folderName: string, product: DbProduct): number {
+  const tokens = normalizeName(folderName);
+  if (tokens.length === 0) return 0;
+  const target = normalizeName(`${product.name} ${product.group_name} ${product.label} ${product.slug}`);
+  const hit = tokens.filter((t) => target.includes(t)).length;
+  return Math.round((hit / tokens.length) * 100);
+}
+
+export type DriveMatchItem = {
+  folderName: string;
+  fileId: string;
+  fileName: string;
+  imageCount: number;
+  selectedSlug: string;
+  score: number;
+  status: "idle" | "working" | "done" | "error";
+};
+
 function AdminProductsPage() {
+
   const [products, setProducts] = useState<DbProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -111,6 +151,83 @@ function AdminProductsPage() {
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [zipMsg, setZipMsg] = useState<string | null>(null);
   const zipInputRef = useRef<HTMLInputElement>(null);
+
+  // Google Drive importer state
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [driveUrl, setDriveUrl] = useState("");
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveImporting, setDriveImporting] = useState(false);
+  const [driveMsg, setDriveMsg] = useState<string | null>(null);
+  const [driveMatches, setDriveMatches] = useState<DriveMatchItem[]>([]);
+
+  const handleDriveScan = async () => {
+    if (!driveUrl.trim()) return;
+    setDriveLoading(true);
+    setDriveMsg("Reading Google Drive folder...");
+    setDriveMatches([]);
+    try {
+      const items: DriveFolderImage[] = await listDriveProductImages({
+        data: { folderUrl: driveUrl.trim() },
+      });
+      const mapped: DriveMatchItem[] = items.map((it) => {
+        let best = { slug: products[0]?.slug ?? "", score: 0 };
+        for (const p of products) {
+          const score = nameMatchScore(it.folderName, p);
+          if (score > best.score) best = { slug: p.slug, score };
+        }
+        return {
+          ...it,
+          selectedSlug: best.slug,
+          score: best.score,
+          status: "idle" as const,
+        };
+      });
+      setDriveMatches(mapped);
+      setDriveMsg(`Found ${mapped.length} folders with images.`);
+    } catch (err: any) {
+      setDriveMsg("Google Drive error: " + (err?.message ?? String(err)));
+    } finally {
+      setDriveLoading(false);
+    }
+  };
+
+  const handleDriveImport = async () => {
+    if (driveMatches.length === 0) return;
+    setDriveImporting(true);
+    let done = 0;
+    for (const item of driveMatches) {
+      if (!item.selectedSlug) continue;
+      setDriveMatches((prev) =>
+        prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "working" } : m))
+      );
+      try {
+        const img = await fetchDriveImage({ data: { fileId: item.fileId } });
+        const blob = await (await fetch(img.dataUrl)).blob();
+        const file = new File([blob], img.fileName, { type: img.mimeType });
+        const publicUrl = await uploadAdminImage(file, "products");
+
+        const { error } = await supabase
+          .from("products")
+          .update({ image_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq("slug", item.selectedSlug);
+        if (error) throw error;
+
+        done++;
+        setDriveMatches((prev) =>
+          prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "done" } : m))
+        );
+      } catch (err) {
+        console.error("Drive import failed for", item.folderName, err);
+        setDriveMatches((prev) =>
+          prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "error" } : m))
+        );
+      }
+    }
+    setDriveMsg(`Import complete — ${done} products updated.`);
+    setDriveImporting(false);
+    loadProducts();
+  };
+
 
   const handleZipFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -453,6 +570,18 @@ function AdminProductsPage() {
           >
             <span>📦</span> Batch Upload ZIP (AI Matcher)
           </button>
+
+          <button
+            onClick={() => {
+              setDriveMsg(null);
+              setIsDriveModalOpen(true);
+            }}
+            className="rounded-sm border border-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-navy hover:bg-navy/5 flex items-center gap-1.5 shadow-sm"
+          >
+            <span>☁️</span> Import from Google Drive
+          </button>
+
+
 
           <button
             onClick={handleOpenAddModal}
@@ -927,6 +1056,142 @@ function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* Google Drive Import Modal */}
+      {isDriveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-6">
+          <div className="w-full max-w-4xl rounded-sm bg-card p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-hairline pb-3">
+              <h2 className="text-lg font-bold text-navy">Import Product Images from Google Drive</h2>
+              <button
+                onClick={() => setIsDriveModalOpen(false)}
+                className="text-muted-foreground hover:text-navy"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Paste a shared Drive folder link. Each sub-folder is matched to a product by name and
+              its first image is saved to that product in the database.
+            </p>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={driveUrl}
+                onChange={(e) => setDriveUrl(e.target.value)}
+                placeholder="https://drive.google.com/drive/folders/..."
+                className="flex-1 border border-hairline bg-background px-3 py-2 text-xs outline-none focus:border-teal rounded-sm"
+              />
+              <button
+                onClick={handleDriveScan}
+                disabled={driveLoading || driveImporting}
+                className="rounded-sm bg-navy px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white disabled:opacity-50"
+              >
+                {driveLoading ? "Scanning..." : "Scan Folder"}
+              </button>
+            </div>
+
+            {driveMsg && <p className="text-xs font-medium text-navy">{driveMsg}</p>}
+
+            {driveMatches.length > 0 && (
+              <>
+                <div className="max-h-[50vh] overflow-y-auto border border-hairline">
+                  <table className="w-full text-xs">
+                    <thead className="bg-navy/5 text-[0.65rem] uppercase tracking-[0.1em] text-muted-foreground">
+                      <tr>
+                        <th className="p-3 text-left">Drive Folder</th>
+                        <th className="p-3 text-left">Matched Product</th>
+                        <th className="p-3 text-center">Match</th>
+                        <th className="p-3 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {driveMatches.map((m) => (
+                        <tr key={m.fileId} className="border-t border-hairline">
+                          <td className="p-3">
+                            <div className="font-semibold text-navy">{m.folderName}</div>
+                            <div className="text-[0.65rem] text-muted-foreground">
+                              {m.fileName} ({m.imageCount} images)
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <select
+                              value={m.selectedSlug}
+                              onChange={(e) =>
+                                setDriveMatches((prev) =>
+                                  prev.map((x) =>
+                                    x.fileId === m.fileId
+                                      ? { ...x, selectedSlug: e.target.value }
+                                      : x
+                                  )
+                                )
+                              }
+                              className="w-full border border-hairline bg-card px-2 py-1 text-xs outline-none focus:border-teal rounded"
+                            >
+                              <option value="">— Skip —</option>
+                              {products.map((p) => (
+                                <option key={p.slug} value={p.slug}>
+                                  [{p.category}] {p.name}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span
+                              className={`inline-block rounded-full px-2.5 py-0.5 text-[0.62rem] font-bold ${
+                                m.score >= 70
+                                  ? "bg-teal/20 text-teal"
+                                  : m.score >= 30
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {m.score}%
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            {m.status === "working" && (
+                              <span className="animate-pulse font-semibold text-amber-600">Saving...</span>
+                            )}
+                            {m.status === "done" && (
+                              <span className="font-semibold text-teal">✓ Saved</span>
+                            )}
+                            {m.status === "error" && (
+                              <span className="font-semibold text-red-600">✕ Error</span>
+                            )}
+                            {m.status === "idle" && (
+                              <span className="text-muted-foreground">Ready</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => setIsDriveModalOpen(false)}
+                    className="rounded-sm border border-hairline px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={handleDriveImport}
+                    disabled={driveImporting}
+                    className="rounded-sm bg-teal px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#05231f] disabled:opacity-50"
+                  >
+                    {driveImporting ? "Importing..." : "Import & Save Images"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }
