@@ -152,6 +152,83 @@ function AdminProductsPage() {
   const [zipMsg, setZipMsg] = useState<string | null>(null);
   const zipInputRef = useRef<HTMLInputElement>(null);
 
+  // Google Drive importer state
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [driveUrl, setDriveUrl] = useState("");
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveImporting, setDriveImporting] = useState(false);
+  const [driveMsg, setDriveMsg] = useState<string | null>(null);
+  const [driveMatches, setDriveMatches] = useState<DriveMatchItem[]>([]);
+
+  const handleDriveScan = async () => {
+    if (!driveUrl.trim()) return;
+    setDriveLoading(true);
+    setDriveMsg("Reading Google Drive folder...");
+    setDriveMatches([]);
+    try {
+      const items: DriveFolderImage[] = await listDriveProductImages({
+        data: { folderUrl: driveUrl.trim() },
+      });
+      const mapped: DriveMatchItem[] = items.map((it) => {
+        let best = { slug: products[0]?.slug ?? "", score: 0 };
+        for (const p of products) {
+          const score = nameMatchScore(it.folderName, p);
+          if (score > best.score) best = { slug: p.slug, score };
+        }
+        return {
+          ...it,
+          selectedSlug: best.slug,
+          score: best.score,
+          status: "idle" as const,
+        };
+      });
+      setDriveMatches(mapped);
+      setDriveMsg(`Found ${mapped.length} folders with images.`);
+    } catch (err: any) {
+      setDriveMsg("Google Drive error: " + (err?.message ?? String(err)));
+    } finally {
+      setDriveLoading(false);
+    }
+  };
+
+  const handleDriveImport = async () => {
+    if (driveMatches.length === 0) return;
+    setDriveImporting(true);
+    let done = 0;
+    for (const item of driveMatches) {
+      if (!item.selectedSlug) continue;
+      setDriveMatches((prev) =>
+        prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "working" } : m))
+      );
+      try {
+        const img = await fetchDriveImage({ data: { fileId: item.fileId } });
+        const blob = await (await fetch(img.dataUrl)).blob();
+        const file = new File([blob], img.fileName, { type: img.mimeType });
+        const publicUrl = await uploadAdminImage(file, "products");
+
+        const { error } = await supabase
+          .from("products")
+          .update({ image_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq("slug", item.selectedSlug);
+        if (error) throw error;
+
+        done++;
+        setDriveMatches((prev) =>
+          prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "done" } : m))
+        );
+      } catch (err) {
+        console.error("Drive import failed for", item.folderName, err);
+        setDriveMatches((prev) =>
+          prev.map((m) => (m.fileId === item.fileId ? { ...m, status: "error" } : m))
+        );
+      }
+    }
+    setDriveMsg(`Import complete — ${done} products updated.`);
+    setDriveImporting(false);
+    loadProducts();
+  };
+
+
   const handleZipFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
